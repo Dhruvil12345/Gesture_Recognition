@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.hardware.Camera;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Base64;
@@ -16,11 +15,13 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 
 public class ImageClass extends Activity {
 
@@ -85,11 +86,16 @@ public class ImageClass extends Activity {
         byte[] byteArray = stream.toByteArray();
 
         imgData = convertImageToBase64(byteArray);
-        MysqlDatabaseHandlerClasses mysql = new MysqlDatabaseHandlerClasses(autoFilenameGiver(),imgData,FilecreatedAt());
+        //new InsertData().execute();
 
-        //MysqlDatabaseHandlerClasses mysql = new MysqlDatabaseHandlerClasses();
-        //mysql.insertData(autoFilenameGiver(),imgData,FilecreatedAt());
-        //Toast.makeText(getApplicationContext(),"Request Sent",Toast.LENGTH_LONG).show();
+        //Object to JSON Code
+        imageData data = new imageData();
+        data.base64 = imgData;
+        data.name2 = autoFilenameGiver();
+        Gson gson = new Gson();
+        String json = gson.toJson(data);
+        System.out.println(json);
+
 
         Bitmap compressBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
         Matrix matrix = new Matrix();
@@ -157,16 +163,8 @@ public class ImageClass extends Activity {
         matrix.postScale(width1,height2);
         Bitmap resizedBitmap = Bitmap.createBitmap(bitmap,0,0,width1,height2,matrix,false);
         return resizedBitmap;
-    }*/
-    /*
+    }
     public void createBackButtonForSmallImageView(){
 
     }
-    public void saveImageToMySQL(){
-
-    }
-    public void saveImageToLocalSystem(){
-
-
-    }
-    */
+    }*/
