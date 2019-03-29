@@ -17,6 +17,16 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -24,6 +34,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
 
 
 public class ImageClass extends Activity {
@@ -99,6 +111,37 @@ public class ImageClass extends Activity {
         String json = gson.toJson(data);
         System.out.println(json);
 
+        //Send data to server
+        try {
+            int TIMEOUT_MILLISEC = 10000;  // = 10 seconds
+            String postMessage = "{}"; //HERE_YOUR_POST_STRING.
+            HttpParams httpParams = new BasicHttpParams();
+            HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_MILLISEC);
+            HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_MILLISEC);
+            HttpClient client = new DefaultHttpClient(httpParams);
+
+            String serverUrl = "";
+            HttpPost request = new HttpPost(serverUrl);
+            request.setEntity(new ByteArrayEntity(postMessage.toString().getBytes("UTF8")));
+
+            //Get Response From Server
+            HttpClient httpclient = new DefaultHttpClient();
+            try {
+                HttpGet httpget = new HttpGet(URL);
+                HttpResponse response = httpclient.execute(httpget);
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    String server_response = EntityUtils.toString(response.getEntity());
+                    Toast.makeText(getApplicationContext(),"Text = "+""+server_response,Toast.LENGTH_LONG).show();
+                }
+                else{
+                    Toast.makeText(getApplicationContext(),"Failed to get server response",Toast.LENGTH_LONG).show();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         Bitmap compressBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
         Matrix matrix = new Matrix();
         matrix.postRotate(90);
