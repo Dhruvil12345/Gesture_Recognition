@@ -16,6 +16,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -96,7 +99,6 @@ public class ImageClass extends Activity {
         String json = gson.toJson(data);
         System.out.println(json);
 
-
         Bitmap compressBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
         Matrix matrix = new Matrix();
         matrix.postRotate(90);
@@ -134,7 +136,6 @@ public class ImageClass extends Activity {
         String format = s.format(new Date());
         return format;
     }
-
     public void saveImageToDirectory(Bitmap bitmap, String filename) {
 
         String extr = Environment.getExternalStorageDirectory().toString() + File.separator + "Expression";
