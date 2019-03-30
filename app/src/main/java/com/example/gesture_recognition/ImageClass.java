@@ -8,7 +8,9 @@ import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -17,24 +19,34 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static android.content.ContentValues.TAG;
 import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
 
 
@@ -112,36 +124,82 @@ public class ImageClass extends Activity {
         System.out.println(json);
 
         //Send data to server
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+//        try {
+//            int TIMEOUT_MILLISEC = 10000;  // = 10 seconds
+//            String postMessage = json; //HERE_YOUR_POST_STRING.
+//            //Toast.makeText(getApplicationContext(),json,Toast.LENGTH_LONG).show();
+//            HttpParams httpParams = new BasicHttpParams();
+//            HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_MILLISEC);
+//            HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_MILLISEC);
+//            HttpClient client = new DefaultHttpClient(httpParams);
+//
+//            String serverUrl = "http://192.168.43.128:45455//Home//ImageReceiver";
+//            HttpPost request = new HttpPost(serverUrl);
+//            request.
+//            request.setEntity(new ByteArrayEntity(postMessage.toString().getBytes("UTF8")));
+//
+//            //Get Response From Server
+//            HttpClient httpclient = new DefaultHttpClient();
+//            try {
+//                HttpGet httpget = new HttpGet("http://192.168.43.128:45455//Home//ImageReceiver");
+//                HttpResponse response = httpclient.execute(httpget);
+//                if (response.getStatusLine().getStatusCode() == 200) {
+//                    String server_response = EntityUtils.toString(response.getEntity());
+//                    Toast.makeText(getApplicationContext(),"Text = "+""+server_response+"CHECKPOINT 0",Toast.LENGTH_LONG).show();
+//                }
+//                else{
+//                    Toast.makeText(getApplicationContext(),"Failed to get server response",Toast.LENGTH_LONG).show();
+//                }
+//            }catch (Exception e){
+//                e.printStackTrace();
+//                Toast.makeText(getApplicationContext(), e.toString()+"CHECKPOINT 1", Toast.LENGTH_SHORT).show();
+//            }
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            Toast.makeText(getApplicationContext(), e.toString()+"CHECKPOINT 2", Toast.LENGTH_SHORT).show();
+//        }
+        HttpClient client = new DefaultHttpClient();
+        HttpConnectionParams.setConnectionTimeout(client.getParams(), 100000); //Timeout Limit
+        HttpResponse response;
         try {
-            int TIMEOUT_MILLISEC = 10000;  // = 10 seconds
-            String postMessage = "{}"; //HERE_YOUR_POST_STRING.
-            HttpParams httpParams = new BasicHttpParams();
-            HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_MILLISEC);
-            HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_MILLISEC);
-            HttpClient client = new DefaultHttpClient(httpParams);
+            HttpPost post = new HttpPost("http://192.168.43.128:45455//Home//ImageReceiver");
+            StringEntity se = new StringEntity( json);
+            se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+            post.setEntity(se);
+            response = client.execute(post);
 
-            String serverUrl = "";
-            HttpPost request = new HttpPost(serverUrl);
-            request.setEntity(new ByteArrayEntity(postMessage.toString().getBytes("UTF8")));
+            /*Checking response */
+            if(response!=null){
+//                InputStream in =  response.getEntity().getContent(); //Get the data in the entity
+//                BufferedReader rd = new BufferedReader(new InputStreamReader(in));
 
-            //Get Response From Server
-            HttpClient httpclient = new DefaultHttpClient();
-            try {
-                HttpGet httpget = new HttpGet(URL);
-                HttpResponse response = httpclient.execute(httpget);
-                if (response.getStatusLine().getStatusCode() == 200) {
-                    String server_response = EntityUtils.toString(response.getEntity());
-                    Toast.makeText(getApplicationContext(),"Text = "+""+server_response,Toast.LENGTH_LONG).show();
+                HttpEntity entity=response.getEntity();
+                if(entity==null){
+                    Log.w(TAG, "The response has no entity.");
+                    Toast.makeText(getApplicationContext(),"Nithing",Toast.LENGTH_LONG).show();
                 }
-                else{
-                    Toast.makeText(getApplicationContext(),"Failed to get server response",Toast.LENGTH_LONG).show();
+                else
+                {
+                    InputStream in =  response.getEntity().getContent();
+                    Toast.makeText(getApplicationContext(),"Ok man",Toast.LENGTH_LONG).show();
+                    BufferedInputStream bin= new BufferedInputStream(new DataInputStream(in));
+                    byte[] buffer= new byte[bin.available()];
+                    String s=new String(buffer);
+                    System.out.print("fff");
                 }
-            }catch (Exception e){
-                e.printStackTrace();
             }
-        }catch (Exception e){
-            e.printStackTrace();
+
+        } catch(Exception e) {
+            //e.printStackTrace();
+            Toast.makeText(getApplicationContext(),e.toString(),Toast.LENGTH_LONG).show();
+            //createDialog("Error", "Cannot Estabilish Connection");
         }
+
+
+
+
         Bitmap compressBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
         Matrix matrix = new Matrix();
         matrix.postRotate(90);
