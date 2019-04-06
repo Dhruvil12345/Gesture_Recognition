@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -26,6 +27,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.params.BasicHttpParams;
@@ -41,6 +43,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
@@ -90,6 +93,7 @@ public class ImageClass extends Activity {
         try {
             c = Camera.open();
         } catch (Exception e) {
+            Log.d("Camera issue",e.getMessage());
         }
         return c;
     }
@@ -126,70 +130,20 @@ public class ImageClass extends Activity {
         //Send data to server
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-//        try {
-//            int TIMEOUT_MILLISEC = 10000;  // = 10 seconds
-//            String postMessage = json; //HERE_YOUR_POST_STRING.
-//            //Toast.makeText(getApplicationContext(),json,Toast.LENGTH_LONG).show();
-//            HttpParams httpParams = new BasicHttpParams();
-//            HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_MILLISEC);
-//            HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_MILLISEC);
-//            HttpClient client = new DefaultHttpClient(httpParams);
-//
-//            String serverUrl = "http://192.168.43.128:45455//Home//ImageReceiver";
-//            HttpPost request = new HttpPost(serverUrl);
-//            request.
-//            request.setEntity(new ByteArrayEntity(postMessage.toString().getBytes("UTF8")));
-//
-//            //Get Response From Server
-//            HttpClient httpclient = new DefaultHttpClient();
-//            try {
-//                HttpGet httpget = new HttpGet("http://192.168.43.128:45455//Home//ImageReceiver");
-//                HttpResponse response = httpclient.execute(httpget);
-//                if (response.getStatusLine().getStatusCode() == 200) {
-//                    String server_response = EntityUtils.toString(response.getEntity());
-//                    Toast.makeText(getApplicationContext(),"Text = "+""+server_response+"CHECKPOINT 0",Toast.LENGTH_LONG).show();
-//                }
-//                else{
-//                    Toast.makeText(getApplicationContext(),"Failed to get server response",Toast.LENGTH_LONG).show();
-//                }
-//            }catch (Exception e){
-//                e.printStackTrace();
-//                Toast.makeText(getApplicationContext(), e.toString()+"CHECKPOINT 1", Toast.LENGTH_SHORT).show();
-//            }
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            Toast.makeText(getApplicationContext(), e.toString()+"CHECKPOINT 2", Toast.LENGTH_SHORT).show();
-//        }
-        HttpClient client = new DefaultHttpClient();
-        HttpConnectionParams.setConnectionTimeout(client.getParams(), 100000); //Timeout Limit
-        HttpResponse response;
+
         try {
-            HttpPost post = new HttpPost("http://192.168.43.128:45455//Home//ImageReceiver");
-            StringEntity se = new StringEntity( json);
-            se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-            post.setEntity(se);
-            response = client.execute(post);
+            HttpPost post = new HttpPost("http://192.168.43.128:45456//Home//ImageReceiver");
+            StringEntity entity = new StringEntity(json);
 
-            /*Checking response */
-            if(response!=null){
-//                InputStream in =  response.getEntity().getContent(); //Get the data in the entity
-//                BufferedReader rd = new BufferedReader(new InputStreamReader(in));
-
-                HttpEntity entity=response.getEntity();
-                if(entity==null){
-                    Log.w(TAG, "The response has no entity.");
-                    Toast.makeText(getApplicationContext(),"Nithing",Toast.LENGTH_LONG).show();
-                }
-                else
-                {
-                    InputStream in =  response.getEntity().getContent();
-                    Toast.makeText(getApplicationContext(),"Ok man",Toast.LENGTH_LONG).show();
-                    BufferedInputStream bin= new BufferedInputStream(new DataInputStream(in));
-                    byte[] buffer= new byte[bin.available()];
-                    String s=new String(buffer);
-                    System.out.print("fff");
-                }
-            }
+            post.setEntity(entity);
+            post.setHeader("Content-type","application/json");
+            DefaultHttpClient client=new DefaultHttpClient();
+            BasicResponseHandler handler=new BasicResponseHandler();
+            String response=client.execute(post,handler);
+            Log.d("JWPPPPPPPP",response);
+            JSONObject reader=new JSONObject(response);
+            String  result=reader.getString("status");
+            Toast.makeText(getApplicationContext(),result,Toast.LENGTH_LONG).show();
 
         } catch(Exception e) {
             //e.printStackTrace();
@@ -228,22 +182,19 @@ public class ImageClass extends Activity {
     public String autoFilenameGiver() {
         SimpleDateFormat s = new SimpleDateFormat("dd-MM-YYYY_HH-mm-ss");
         String format = s.format(new Date());
-        String concat = format + ".jpg";
-        return concat;
+        return format + ".jpg";
     }
 
     public String FilecreatedAt(){
         SimpleDateFormat s = new SimpleDateFormat("dd-MM-YYYY_HH-mm-ss");
-        String format = s.format(new Date());
-        return format;
+        return s.format(new Date());
     }
     public void saveImageToDirectory(Bitmap bitmap, String filename) {
 
         String extr = Environment.getExternalStorageDirectory().toString() + File.separator + "Expression";
         File myPath = new File(extr, filename);
-        FileOutputStream fos = null;
         try {
-            fos = new FileOutputStream(myPath);
+            FileOutputStream fos = new FileOutputStream(myPath);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fos);
             fos.flush();
             fos.close();
@@ -252,8 +203,8 @@ public class ImageClass extends Activity {
         }
     }
     public String convertImageToBase64(byte[] bytearray){
-        String imgEncode = Base64.encodeToString(bytearray,Base64.DEFAULT);
-        return imgEncode;
+        //String imgEncode = Base64.encodeToString(bytearray,Base64.DEFAULT);
+        return Base64.encodeToString(bytearray,Base64.DEFAULT);
     }
 }
     /*public Bitmap setResolution(Bitmap bitmap,int width,int height){
