@@ -20,14 +20,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        select_file_from_device = (Button) findViewById(R.id.fileSelection);
+        /*select_file_from_device = (Button) findViewById(R.id.fileSelection);
         select_file_from_device.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(i, RESULT_LOAD_IMAGE);
             }
-        });
+        });*/
         CaptureImage = (Button)findViewById(R.id.capture_image);
         CaptureImage.setOnClickListener(new View.OnClickListener() {
             @Override

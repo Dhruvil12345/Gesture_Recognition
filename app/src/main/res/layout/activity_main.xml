@@ -4,18 +4,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="select File"
-        android:layout_centerInParent="true"
-        android:id="@+id/fileSelection"/>
+
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Capture Image"
-        android:layout_below="@id/fileSelection"
+
         android:layout_centerInParent="true"
         android:id="@+id/capture_image"/>
 

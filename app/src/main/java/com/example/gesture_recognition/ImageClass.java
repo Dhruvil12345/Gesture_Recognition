@@ -132,9 +132,8 @@ public class ImageClass extends Activity {
         StrictMode.setThreadPolicy(policy);
 
         try {
-            HttpPost post = new HttpPost("http://192.168.43.128:45456//Home//ImageReceiver");
+            HttpPost post = new HttpPost("http://192.168.43.128:45455/Home/ImageReceiver");
             StringEntity entity = new StringEntity(json);
-
             post.setEntity(entity);
             post.setHeader("Content-type","application/json");
             DefaultHttpClient client=new DefaultHttpClient();
